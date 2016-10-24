@@ -173,6 +173,15 @@
      */
 }
 
+- (void)startProcessing
+{
+    isEndProcessing = NO;
+    for (id<GPUImageInput> currentTarget in _initialFilters)
+    {
+        [currentTarget startProcessing];
+    }    
+}
+
 - (void)endProcessing;
 {
     if (!isEndProcessing)

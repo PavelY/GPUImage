@@ -48,6 +48,7 @@ typedef enum { kGPUImageNoRotation, kGPUImageRotateLeft, kGPUImageRotateRight, k
 - (void)setInputRotation:(GPUImageRotationMode)newInputRotation atIndex:(NSInteger)textureIndex;
 - (CGSize)maximumOutputSize;
 - (void)endProcessing;
+- (void)startProcessing;
 - (BOOL)shouldIgnoreUpdatesToThisTarget;
 - (BOOL)enabled;
 - (BOOL)wantsMonochromeInput;

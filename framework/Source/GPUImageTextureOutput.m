@@ -61,6 +61,10 @@
     return CGSizeZero;
 }
 
+- (void)startProcessing
+{    
+}
+
 - (void)endProcessing
 {
 }

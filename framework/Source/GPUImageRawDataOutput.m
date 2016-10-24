@@ -216,6 +216,10 @@
     return imageSize;
 }
 
+- (void)startProcessing
+{    
+}
+
 - (void)endProcessing;
 {
 }

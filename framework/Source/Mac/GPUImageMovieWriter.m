@@ -545,6 +545,10 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
     return videoSize;
 }
 
+- (void)startProcessing
+{
+}
+
 - (void)endProcessing 
 {
     if (completionBlock) 

@@ -410,6 +410,10 @@
     }
 }
 
+- (void)startProcessing
+{
+}
+
 - (void)endProcessing
 {
 }
