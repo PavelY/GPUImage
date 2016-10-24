@@ -51,6 +51,7 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
 
 @synthesize preventRendering = _preventRendering;
 @synthesize currentlyReceivingMonochromeInput;
+@synthesize filterProgram = filterProgram;
 
 #pragma mark -
 #pragma mark Initialization and teardown
