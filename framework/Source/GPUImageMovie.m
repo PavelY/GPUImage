@@ -30,6 +30,9 @@
     BOOL isFullYUVRange;
 
     int imageBufferWidth, imageBufferHeight;
+    
+#pragma mark - PavelY custom additions
+    AVAssetReaderOutput *assetReaderVideoTrackOutput;
 }
 
 - (void)processAsset;
@@ -871,6 +874,73 @@ static CVReturn renderCallback(CVDisplayLinkRef displayLink,
 
 - (BOOL)videoEncodingIsFinished {
     return videoEncodingIsFinished;
+}
+
+#pragma mark - PavelY custom addition
+
+- (void)prepareForVideoProcessing
+{
+    // TODO : uncomment later
+//    for (id<GPUImageInput> currentTarget in targets)
+//        [currentTarget startProcessing];
+    
+    if (_shouldRepeat) keepLooping = YES;
+    
+    previousFrameTime = kCMTimeZero;
+    previousActualFrameTime = CFAbsoluteTimeGetCurrent();
+    
+    NSDictionary *inputOptions = [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:AVURLAssetPreferPreciseDurationAndTimingKey];
+    AVURLAsset *inputAsset = [[AVURLAsset alloc] initWithURL:self.url options:inputOptions];
+    
+    self.asset = inputAsset;
+    
+    [self createVideoReader];
+}
+
+- (void)processVideoFrameAtTime:(CMTime)outputItemTime
+{
+    if (reader.status == AVAssetReaderStatusReading)
+    {
+        runSynchronouslyOnVideoProcessingQueue(^{
+            [self readNextVideoFrameFromOutput:assetReaderVideoTrackOutput];
+        });
+    }
+}
+
+- (void)createVideoReader
+{
+    reader = [self createAssetReader];
+    
+    audioEncodingIsFinished = YES;
+    for( AVAssetReaderOutput *output in reader.outputs )
+        if( [output.mediaType isEqualToString:AVMediaTypeVideo] )
+            assetReaderVideoTrackOutput = output;
+    
+    if ([reader startReading] == NO)
+        NSLog(@"Error reading from file at URL: %@", self.url);
+}
+
+- (void)destroyVideoReader
+{
+    assetReaderVideoTrackOutput = nil;
+    if (reader)
+    {
+        [reader cancelReading];
+        reader = nil;
+    }
+}
+
+- (void)cancelVideoProcessing
+{
+    [self destroyVideoReader];
+    for (id<GPUImageInput> currentTarget in targets)
+        [currentTarget endProcessing];
+}
+
+- (void)resetVideoReader
+{
+    [self destroyVideoReader];
+    [self createVideoReader];
 }
 
 @end

@@ -56,6 +56,11 @@
 - (void)startProcessing;
 - (void)endProcessing;
 - (void)cancelProcessing;
-- (void)processMovieFrame:(CMSampleBufferRef)movieSampleBuffer; 
+- (void)processMovieFrame:(CMSampleBufferRef)movieSampleBuffer;
+
+- (void)prepareForVideoProcessing;
+- (void)processVideoFrameAtTime:(CMTime)outputItemTime;
+- (void)resetVideoReader;
+- (void)cancelVideoProcessing;
 
 @end
