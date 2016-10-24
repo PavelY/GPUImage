@@ -880,9 +880,8 @@ static CVReturn renderCallback(CVDisplayLinkRef displayLink,
 
 - (void)prepareForVideoProcessing
 {
-    // TODO : uncomment later
-//    for (id<GPUImageInput> currentTarget in targets)
-//        [currentTarget startProcessing];
+    for (id<GPUImageInput> currentTarget in targets)
+        [currentTarget startProcessing];
     
     if (_shouldRepeat) keepLooping = YES;
     
