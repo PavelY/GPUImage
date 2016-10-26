@@ -24,5 +24,4 @@ Pod::Spec.new do |s|
                         'framework/Source/GPUImageStillCamera.*',
                         'framework/Source/GPUImageUIElement.*'
   s.osx.xcconfig = { 'GCC_WARN_ABOUT_RETURN_TYPE' => 'YES' }
-  s.dependency = 'TPCircularBuffer'
 end
