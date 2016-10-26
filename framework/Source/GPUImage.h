@@ -19,6 +19,7 @@
 #import "GPUImageBuffer.h"
 #import "GPUImageFramebuffer.h"
 #import "GPUImageFramebufferCache.h"
+#import "GPUImageAudioPlayer.h"
 
 // Filters
 #import "GPUImageFilter.h"
