@@ -10,8 +10,7 @@ Pod::Spec.new do |s|
   s.source_files = 'framework/Source/**/*.{h,m}'
   s.resources = 'framework/Resources/*.png'
   s.requires_arc = true
-  s.xcconfig = { 'CLANG_MODULES_AUTOLINK' => 'YES' }
-  s.dependency ‘TPCircularBuffer’
+  s.xcconfig = { 'CLANG_MODULES_AUTOLINK' => 'YES' }  
   
   s.ios.deployment_target = '5.0'
   s.ios.exclude_files = 'framework/Source/Mac'
@@ -25,4 +24,6 @@ Pod::Spec.new do |s|
                         'framework/Source/GPUImageStillCamera.*',
                         'framework/Source/GPUImageUIElement.*'
   s.osx.xcconfig = { 'GCC_WARN_ABOUT_RETURN_TYPE' => 'YES' }
+
+  s.dependency 'TPCircularBuffer'
 end
