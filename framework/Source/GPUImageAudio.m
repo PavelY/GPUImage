@@ -9,8 +9,8 @@
 #import "GPUImageAudio.h"
 #import <AudioToolbox/AudioToolbox.h>
 #import <CoreAudio/CoreAudio.h>
-#import <TPCircularBuffer.h>
-#import <TPCircularBuffer+AudioBufferList.h>
+#import "TPCircularBuffer.h"
+#import "TPCircularBuffer+AudioBufferList.h"
 
 static const NSInteger kOutputBus = 0;
 static const NSInteger kCircularBufferSize = 655360;
