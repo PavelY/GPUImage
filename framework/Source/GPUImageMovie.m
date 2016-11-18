@@ -2,6 +2,7 @@
 #import "GPUImageMovieWriter.h"
 #import "GPUImageFilter.h"
 #import "GPUImageColorConversion.h"
+#import "GPUImageAudio.h"
 
 
 @interface GPUImageMovie () <AVPlayerItemOutputPullDelegate>
@@ -33,7 +34,10 @@
     
 #pragma mark - PavelY custom additions
     AVAssetReaderOutput *assetReaderVideoTrackOutput;
+    GPUImageAudio *audio;
 }
+
+@property (nonatomic, strong) AVAssetReaderTrackOutput *audioOutputTrack;
 
 - (void)processAsset;
 
@@ -236,6 +240,28 @@
         readerAudioTrackOutput.alwaysCopiesSampleData = NO;
         [assetReader addOutput:readerAudioTrackOutput];
     }
+    
+    if (self.playAudio)
+    {
+        NSDictionary *audioOutputSettings = [NSDictionary dictionaryWithObjectsAndKeys:
+                                             [NSNumber numberWithInt:kAudioFormatLinearPCM], AVFormatIDKey,
+                                             [NSNumber numberWithFloat:44100.0], AVSampleRateKey,
+                                             [NSNumber numberWithInt:16], AVLinearPCMBitDepthKey,
+                                             [NSNumber numberWithBool:NO], AVLinearPCMIsNonInterleaved,
+                                             [NSNumber numberWithBool:NO], AVLinearPCMIsFloatKey,
+                                             [NSNumber numberWithBool:NO], AVLinearPCMIsBigEndianKey,
+                                             nil];
+        
+        
+        NSArray *audioTracks = [self.asset tracksWithMediaType:AVMediaTypeAudio];
+        if (audioTracks.count > 0)
+        {
+            self.audioOutputTrack = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:audioTracks[0]
+                                                                               outputSettings:audioOutputSettings];
+            self.audioOutputTrack.alwaysCopiesSampleData = NO;
+            [assetReader addOutput:self.audioOutputTrack];
+        }
+    }
 
     return assetReader;
 }
@@ -287,6 +313,12 @@
     }
     else
     {
+        // initialize audio output device
+        if (readerAudioTrackOutput)
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                audio = [GPUImageAudio audioOutput];
+            });
+        
         while (reader.status == AVAssetReaderStatusReading && (!_shouldRepeat || keepLooping))
         {
                 [weakSelf readNextVideoFrameFromOutput:readerVideoTrackOutput];
@@ -312,6 +344,12 @@
             }
 
         }
+        
+        // deinitialize audio output device
+        if (audio)
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                audio = nil;
+            });
     }
 }
 
@@ -474,20 +512,36 @@ static CVReturn renderCallback(CVDisplayLinkRef displayLink,
 {
     if (reader.status == AVAssetReaderStatusReading && ! audioEncodingIsFinished)
     {
-        CMSampleBufferRef audioSampleBufferRef = [readerAudioTrackOutput copyNextSampleBuffer];
-        if (audioSampleBufferRef)
+        if (self.playAudio && audio)
         {
-            //NSLog(@"read an audio frame: %@", CFBridgingRelease(CMTimeCopyDescription(kCFAllocatorDefault, CMSampleBufferGetOutputPresentationTimeStamp(audioSampleBufferRef))));
-            [self.audioEncodingTarget processAudioBuffer:audioSampleBufferRef];
-            CFRelease(audioSampleBufferRef);
-            return YES;
+            if (audio.canPlayMore)
+            {
+                CMSampleBufferRef audioSampleBufferRef = [readerAudioTrackOutput copyNextSampleBuffer];
+                if (audioSampleBufferRef)
+                {
+                    [audio playSampleBuffer:audioSampleBufferRef];
+                    CFRelease(audioSampleBufferRef);
+                    return YES;
+                }
+            }
         }
         else
         {
-            if (!keepLooping) {
-                audioEncodingIsFinished = YES;
-                if( videoEncodingIsFinished && audioEncodingIsFinished )
-                    [self endProcessing];
+            CMSampleBufferRef audioSampleBufferRef = [readerAudioTrackOutput copyNextSampleBuffer];
+            if (audioSampleBufferRef)
+            {
+                //NSLog(@"read an audio frame: %@", CFBridgingRelease(CMTimeCopyDescription(kCFAllocatorDefault, CMSampleBufferGetOutputPresentationTimeStamp(audioSampleBufferRef))));
+                [self.audioEncodingTarget processAudioBuffer:audioSampleBufferRef];                
+                CFRelease(audioSampleBufferRef);
+                return YES;
+            }
+            else
+            {
+                if (!keepLooping) {
+                    audioEncodingIsFinished = YES;
+                    if( videoEncodingIsFinished && audioEncodingIsFinished )
+                        [self endProcessing];
+                }
             }
         }
     }
